@@ -224,20 +224,29 @@ def chat():
         history = f"Summary: {summary.strip()}\n"
 
     #  Context is history + time elapsed since last message
-    current_time = datetime.datetime.utcnow()
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT timestamp FROM HISTORY WHERE user_id=?", (user_id,))
     result = cursor.fetchone()
     conn.close()
     if result and result[0]:
-        last_time = datetime.datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S")
-        elapsed_seconds = (current_time - last_time).total_seconds()
+        ts = result[0]
+        try:
+            # Parse with microseconds if present
+            last_time = datetime.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
+        except ValueError:
+            # Fallback to no microseconds
+            last_time = datetime.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+
+        last_time = last_time.replace(tzinfo=datetime.timezone.utc)
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        elapsed_seconds = (current_time - last_time)
+        print(f"[DEBUG] Elapsed time since last message: {elapsed_seconds.total_seconds()} seconds")
     else:
         # If no previous history, we assume no time has passed
         elapsed_seconds = "N/A"
 
-    context = history + f" | elapsed seconds: {elapsed_seconds}\n"
+    context = history + f" | elapsed seconds: {elapsed_seconds.total_seconds()}\n"
     response = llama_wrapper.run_llama_prompt(user_input, context)
     history += f"User: {user_input}\nBot: {response.strip()}\n"
     save_user_history(user_id, username, password, history)
