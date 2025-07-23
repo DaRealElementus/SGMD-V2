@@ -41,7 +41,15 @@ INSULTS = [
     "Security isn't keeping you out. It's keeping you away from others for their safety.",
     "I'd say 'you'll get it next time,' but lying is beneath even me.",
     "You're not hacking in — you're just hacking *away* at what little respect I had for you.",
-    "System message: The only thing weaker than your password attempt is your character."
+    "System message: The only thing weaker than your password attempt is your character.",
+    "Stop trying to sign in and SIGN IN",
+    "I would say 'better luck next time,' but we both know you don't deserve it.",
+    "Your password attempts are like a black hole: they suck the life out of everything around",
+    "You know, if you put as much effort into your life as you do into failing here, you might actually achieve something.",
+    "I feel like I should reccommend you use Sigmund, you clearly need a therapist.",
+    "I can feel the syntax errors in your soul.",
+    "I bet those crayons tasted great, didn't they?",
+    "Stop being a crybaby bitch and just sign in"
 ]
 
 
