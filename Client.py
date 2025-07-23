@@ -11,15 +11,15 @@ SERVER = "http://127.0.0.1:5000"  # Change to your server's IP if needed
 def is_sha256(s: str) -> bool:
     return bool(re.fullmatch(r"[a-fA-F0-9]{64}", s))
 
-def sha256_hash(value: str) -> str:
-    return hashlib.sha256(value.encode()).hexdigest()
+def sha256_hash(value: str) -> bytes:
+    return hashlib.sha256(value.encode()).digest()
 
 def normalize_and_hash(username: str, password: str):
     if not is_sha256(username):
         username = sha256_hash(username)
     if not is_sha256(password):
         password = sha256_hash(password)
-    return username, password
+    return username.hex(), password.hex()
 
 def register(username, password):
     username, password = normalize_and_hash(username, password)
