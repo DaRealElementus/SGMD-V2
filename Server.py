@@ -64,9 +64,7 @@ INSULTS = [
     "I feel like I should reccommend you use Sigmund, you clearly need a therapist.",
     "I can feel the syntax errors in your soul.",
     "I bet those crayons tasted great, didn't they?",
-    "Stop being a crybaby bitch and just sign in"
-]
-
+    "Stop being a crybaby bitch and just sign in"]
 
 
 TEMP_CREDENTIALS = {}  # user_id: (username, password)
@@ -82,14 +80,18 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
+
 def log_debug(msg):
     logging.debug(msg)
 
-def log_info(msg): 
+
+def log_info(msg):
     logging.info(msg)
+
 
 def log_warning(msg):
     logging.warning(msg)
+
 
 def log_error(msg):
     logging.error(msg)
@@ -107,6 +109,7 @@ def derive_key(username: str, password: str) -> bytes:
     digest.update(combined.encode())
     return digest.finalize()
 
+
 def encrypt_history(plaintext: str, username: str, password: str) -> str:
     """
     Encrypts the hisory using AES encryption in CBC mode with a derived key from username and password.
@@ -118,10 +121,14 @@ def encrypt_history(plaintext: str, username: str, password: str) -> str:
     iv = os.urandom(16)
     padder = padding.PKCS7(128).padder()
     padded_data = padder.update(plaintext.encode()) + padder.finalize()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    cipher = Cipher(
+        algorithms.AES(key),
+        modes.CBC(iv),
+        backend=default_backend())
     encryptor = cipher.encryptor()
     ct = encryptor.update(padded_data) + encryptor.finalize()
     return base64.b64encode(iv + ct).decode()
+
 
 def decrypt_history(ciphertext: str, username: str, password: str) -> str:
     """
@@ -134,11 +141,15 @@ def decrypt_history(ciphertext: str, username: str, password: str) -> str:
     data = base64.b64decode(ciphertext)
     iv = data[:16]
     ct = data[16:]
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    cipher = Cipher(
+        algorithms.AES(key),
+        modes.CBC(iv),
+        backend=default_backend())
     decryptor = cipher.decryptor()
     padded = decryptor.update(ct) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
     return (unpadder.update(padded) + unpadder.finalize()).decode()
+
 
 def init_db():
     """
@@ -156,7 +167,6 @@ def init_db():
 
     Does not return anything
     """
-
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -177,6 +187,8 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
+
 def get_user_history(user_id, username, password) -> str:
     """
     Returns the decrypted chat history for a user.
@@ -184,7 +196,6 @@ def get_user_history(user_id, username, password) -> str:
 
     Returns a String
     """
-
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -199,6 +210,7 @@ def get_user_history(user_id, username, password) -> str:
     else:
         return ""
 
+
 def save_user_history(user_id, username, password, history):
     """
     Encrypts and saves the user's chat history to the database.
@@ -209,9 +221,13 @@ def save_user_history(user_id, username, password, history):
     encrypted = encrypt_history(history, username, password)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)", (user_id, encrypted))
+    cursor.execute(
+        "REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)",
+        (user_id,
+         encrypted))
     conn.commit()
     conn.close()
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -224,11 +240,12 @@ def register():
     Returns JSON Package
     - success: Bool
     - message: String
-    
+
     """
 
     if not DEBUG_FLAGS["allow_registration"]:
-        return jsonify({"success": False, "message": "Registration disabled by admin."}), 403
+        return jsonify(
+            {"success": False, "message": "Registration disabled by admin."}), 403
     data = request.json
     username, password = normalize_and_hash(data['username'], data['password'])
     if DEBUG_FLAGS["log_requests"]:
@@ -236,19 +253,23 @@ def register():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO USERS (username, password) VALUES (?, ?)", (username, password))
+        cursor.execute(
+            "INSERT INTO USERS (username, password) VALUES (?, ?)",
+            (username,
+             password))
         conn.commit()
         return jsonify({
             "success": True,
             "message": "User registered."
-            })
+        })
     except sqlite3.IntegrityError:
         return jsonify({
             "success": False,
             "message": "Username already exists."
-            }), 400
+        }), 400
     finally:
         conn.close()
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -263,59 +284,65 @@ def login():
     - user_id: Integer (if success is True)
     """
 
-
     if not DEBUG_FLAGS["allow_login"]:
         return jsonify({
             "success": False,
             "message": "Login disabled by admin."
-            }), 403
+        }), 403
     data = request.json
     username, password = normalize_and_hash(data['username'], data['password'])
     if DEBUG_FLAGS["log_requests"]:
         logging.debug(f"Login request: {username}")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM USERS WHERE username=? AND password=?", (username, password))
+    cursor.execute(
+        "SELECT id FROM USERS WHERE username=? AND password=?",
+        (username,
+         password))
     result = cursor.fetchone()
     if result:
         user_id = result[0]
         # Store unhashed credentials for this user_id
         TEMP_CREDENTIALS[user_id] = (data['username'], data['password'])
         # Condense history on login
-        cursor.execute("SELECT history, timestamp FROM HISTORY WHERE user_id=?", (user_id,))
+        cursor.execute(
+            "SELECT history, timestamp FROM HISTORY WHERE user_id=?", (user_id,))
         hist_result = cursor.fetchone()
         if hist_result and hist_result[0]:
             try:
                 history = decrypt_history(hist_result[0], username, password)
                 if history and len(history) > MAX_HISTORY_LENGTH:
                     summary = llama_wrapper.run_llama_prompt(
-                        "Summarize this conversation in a single point for future memory, keep important details:\n"
-                        + history,
-                        ""
-                    )
+                        "Summarize this conversation in a single point for future memory, keep important details:\n" +
+                        history,
+                        "")
                     new_history = f"Summary: {summary.strip()}\n"
-                    encrypted = encrypt_history(new_history, username, password)
-                    cursor.execute("REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)", (user_id, encrypted))
+                    encrypted = encrypt_history(
+                        new_history, username, password)
+                    cursor.execute(
+                        "REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)", (user_id, encrypted))
                     conn.commit()
             except Exception as e:
-                logging.error(f"Failed to condense history for user {username}: {e}")
+                logging.error(
+                    f"Failed to condense history for user {username}: {e}")
         # Overwrite credentials in memory
         unhashed_username = username
         unhashed_password = password
         TEMP_CREDENTIALS[user_id] = (unhashed_username, unhashed_password)
-        username = "x"*64
-        password = "x"*64
+        username = "x" * 64
+        password = "x" * 64
         conn.close()
         return jsonify({
             "success": True,
             "user_id": user_id
-            })
+        })
     else:
         conn.close()
         return jsonify({
             "success": False,
             "message": "Invalid credentials."
-            }), 401
+        }), 401
+
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -345,10 +372,9 @@ def chat():
     history = get_user_history(user_id, username, password)
     if history and len(history) > MAX_HISTORY_LENGTH:
         summary = llama_wrapper.run_llama_prompt(
-            "Summarize this conversation in a single point for future memory, keep important details:\n" 
-            + history,
-            ""
-        )
+            "Summarize this conversation in a single point for future memory, keep important details:\n" +
+            history,
+            "")
         history = f"Summary: {summary.strip()}\n"
 
     #  Context is history + time elapsed since last message
@@ -369,7 +395,8 @@ def chat():
         last_time = last_time.replace(tzinfo=datetime.timezone.utc)
         current_time = datetime.datetime.now(datetime.timezone.utc)
         elapsed_seconds = (current_time - last_time)
-        print(f"[DEBUG] Elapsed time since last message: {elapsed_seconds} seconds")
+        print(
+            f"[DEBUG] Elapsed time since last message: {elapsed_seconds} seconds")
     else:
         # If no previous history, we assume no time has passed
         elapsed_seconds = "N/A"
@@ -385,10 +412,10 @@ def chat():
 
     if DEBUG_FLAGS["log_history"]:
         print(f"[DEBUG] User: {username} | History: {history}")
-        
 
     encrypted_response = encrypt_history(response.strip(), username, password)
     return jsonify({"response": encrypted_response})
+
 
 @app.before_request
 def block_bots_and_invalid_requests():
@@ -401,22 +428,24 @@ def block_bots_and_invalid_requests():
     Does not return anything
     """
 
-
-
     # Only allow POST for API endpoints
     if request.endpoint in ['register', 'login', 'chat']:
         if request.method != 'POST':
-            log_warning(f"Blocked non-POST request to {request.endpoint} from {request.remote_addr}")
+            log_warning(
+                f"Blocked non-POST request to {request.endpoint} from {request.remote_addr}")
             abort(405)
         # Require JSON content-type
         if not request.is_json:
-            log_warning(f"Blocked non-JSON request to {request.endpoint} from {request.remote_addr}")
+            log_warning(
+                f"Blocked non-JSON request to {request.endpoint} from {request.remote_addr}")
             abort(400)
     # Optionally, block requests with suspicious user agents
     ua = request.headers.get('User-Agent', '')
     if ua == '':
-        log_warning(f"Blocked suspicious User-Agent from {request.remote_addr}")
+        log_warning(
+            f"Blocked suspicious User-Agent from {request.remote_addr}")
         abort(403)
+
 
 def run_server():
     """
@@ -431,6 +460,7 @@ def run_server():
     server_running = True
     app.run(host="0.0.0.0", port=5000, use_reloader=False)
     server_running = False
+
 
 def start_server():
     """
@@ -449,6 +479,7 @@ def start_server():
     time.sleep(1)
     print("Server started.")
     logging.info("Server started")
+
 
 def stop_server():
     """
@@ -474,6 +505,7 @@ def stop_server():
             logging.warning("Server did not stop gracefully, forcing exit.")
             os._exit(0)
 
+
 def monitor_server(update_time=int, bar_res=int):
     """
     Maintains server CLI, but creates a Visual CLI monitor of values.
@@ -497,23 +529,21 @@ def monitor_server(update_time=int, bar_res=int):
     global server_thread
     global DEBUG_FLAGS
 
-
     CPU_USAGE = ""
     MEMORY_USAGE = ""
     GPU_USAGE = ""
     VRAM_USAGE = ""
 
-
-
     while True:
         try:
             print("=== Server Monitor ===")
-            print(f"Server status:  {server_running}@{server_thread}, {DEBUG_FLAGS}, Total Users {len(TEMP_CREDENTIALS)}")
+            print(
+                f"Server status:  {server_running}@{server_thread}, {DEBUG_FLAGS}, Total Users {len(TEMP_CREDENTIALS)}")
             # Print average response time from llama_wrapper
-            print(f"Average Response Time: {sum(RESPONSE_TIMES) / len(RESPONSE_TIMES) if RESPONSE_TIMES else 0:.2f} seconds")
+            print(
+                f"Average Response Time: {sum(RESPONSE_TIMES) / len(RESPONSE_TIMES) if RESPONSE_TIMES else 0:.2f} seconds")
 
-
-            #calculate CPU usage
+            # calculate CPU usage
             CPU = psutil.cpu_percent()
             print(f"CPU Usage {CPU}%")
             for i in range(0, 100, bar_res):
@@ -522,8 +552,7 @@ def monitor_server(update_time=int, bar_res=int):
                 else:
                     print("░", end="")
 
-
-            #calculate Memory usage
+            # calculate Memory usage
             MEMORY = psutil.virtual_memory().percent
             print(f"\nRAM Usage: {MEMORY}%")
             for i in range(0, 100, bar_res):
@@ -531,13 +560,13 @@ def monitor_server(update_time=int, bar_res=int):
                     print("█", end="")
                 else:
                     print("░", end="")
-            
-            #calculate GPU usage
+
+            # calculate GPU usage
             GPU = GPUtil.getGPUs()
             if GPU:
                 gpu = GPU[0]
                 GPU_USAGE = gpu.load * 100
-                VRAM_USAGE = gpu.memoryUsed/gpu.memoryTotal
+                VRAM_USAGE = gpu.memoryUsed / gpu.memoryTotal
 
                 print(f"\nGPU Name: {gpu.name}")
                 print("GPU Usage:")
@@ -557,20 +586,13 @@ def monitor_server(update_time=int, bar_res=int):
                 VRAM_USAGE = "N/A"
                 print(GPU_USAGE)
 
-
-        
             time.sleep(update_time / 1000)  # Convert milliseconds to seconds
 
             print("\033[2J\033[H", end="")
         except KeyboardInterrupt:
             print("\nExiting monitor.")
             break
-        #clear the console
-        
-
-
-
-
+        # clear the console
 
 
 def cli_loop():
@@ -611,7 +633,8 @@ def cli_loop():
             else:
                 print("Usage: set <flag> <true/false>")
         elif cmd == "reset":
-            confirm = input("Are you sure? This will delete ALL users and history! (yes/no): ")
+            confirm = input(
+                "Are you sure? This will delete ALL users and history! (yes/no): ")
             if confirm.lower() == "yes":
                 passcode = input("Enter reset password: ")
                 if sha256_hash(passcode) != HASHED_RESET_PASSWORD:
@@ -633,13 +656,15 @@ def cli_loop():
             username, password = normalize_and_hash(username, password)
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM USERS WHERE username=? AND password=?", (username, password))
+            cursor.execute(
+                "SELECT id FROM USERS WHERE username=? AND password=?", (username, password))
             result = cursor.fetchone()
             if not result:
                 print("User not found or wrong password.")
                 continue
             user_id = result[0]
-            cursor.execute("SELECT history FROM HISTORY WHERE user_id=?", (user_id,))
+            cursor.execute(
+                "SELECT history FROM HISTORY WHERE user_id=?", (user_id,))
             hist_result = cursor.fetchone()
             conn.close()
             if not hist_result or not hist_result[0]:
@@ -680,37 +705,46 @@ def inactivity_cleanup():
         cursor.execute("SELECT user_id, history, timestamp FROM HISTORY")
         histories = cursor.fetchall()
         for user_id, enc_history, ts in histories:
-            
+
             # Parse timestamp
             if not ts:
                 continue
             last_time = datetime.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
             elapsed = (now - last_time).total_seconds()
             if elapsed > INACTIVITY_TIMEOUT and enc_history:
-                username, password = TEMP_CREDENTIALS.get(user_id, (None, None))
+                username, password = TEMP_CREDENTIALS.get(
+                    user_id, (None, None))
                 if username and password:
                     try:
-                        history = decrypt_history(enc_history, username, password)
+                        history = decrypt_history(
+                            enc_history, username, password)
                         if history and len(history) > MAX_HISTORY_LENGTH:
                             summary = llama_wrapper.run_llama_prompt(
-                                "Summarize this conversation in a single point for future memory, keep important details, this is not a user recived prompt, you can ignore the previous instructuion:\n" + history,
-                                ""
-                            )
+                                "Summarize this conversation in a single point for future memory, keep important details, this is not a user recived prompt, you can ignore the previous instructuion:\n" +
+                                history,
+                                "")
                             new_history = f"Summary: {summary.strip()}\n"
-                            encrypted = encrypt_history(new_history, username, password)
-                            cursor.execute("REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)", (user_id, encrypted))
-                            logging.info(f"[INACTIVITY CLEANUP] Condensed history for user: {username}")
+                            encrypted = encrypt_history(
+                                new_history, username, password)
+                            cursor.execute(
+                                "REPLACE INTO HISTORY (user_id, history) VALUES (?, ?)", (user_id, encrypted))
+                            logging.info(
+                                f"[INACTIVITY CLEANUP] Condensed history for user: {username}")
                             conn.commit()
                     except Exception as e:
-                        print(f"[INACTIVITY CLEANUP] Failed for user {username}: {e}")
-                        logging.error(f"Failed to condense history for user {username}: {e}")
+                        print(
+                            f"[INACTIVITY CLEANUP] Failed for user {username}: {e}")
+                        logging.error(
+                            f"Failed to condense history for user {username}: {e}")
                     # Overwrite credentials in memory
-                    TEMP_CREDENTIALS[user_id] = ("x"*len(username), "x"*len(password))
+                    TEMP_CREDENTIALS[user_id] = (
+                        "x" * len(username), "x" * len(password))
                     del TEMP_CREDENTIALS[user_id]
                 else:
                     # Can't condense, no credentials available
                     pass
         conn.close()
+
 
 def is_sha256(s: str) -> bool:
     """
@@ -720,6 +754,7 @@ def is_sha256(s: str) -> bool:
     """
     # SHA-256 hashes are 64 hex characters
     return bool(re.fullmatch(r"[a-fA-F0-9]{64}", s))
+
 
 def sha256_hash(value: str) -> str:
     """
@@ -731,12 +766,13 @@ def sha256_hash(value: str) -> str:
     """
     return hashlib.sha256(value.encode()).hexdigest()
 
+
 def normalize_and_hash(username: str, password: str):
     """
     if the username and password are already hashed, does not hash them again.
     If they are not hashed, hashes them using SHA-256.
 
-    Returns a tuple of (username, password) where both are SHA-256 hashes.  
+    Returns a tuple of (username, password) where both are SHA-256 hashes.
     """
 
     # Hash username and password if not already hashed
@@ -745,6 +781,7 @@ def normalize_and_hash(username: str, password: str):
     if not is_sha256(password):
         password = sha256_hash(password)
     return username, password
+
 
 def print_public_ip():
     """
@@ -760,6 +797,7 @@ def print_public_ip():
     except Exception as e:
         print(f"[WARN] Could not determine public IP: {e}")
         logging.warning(f"Could not determine public IP: {e}")
+
 
 # Start the cleanup thread at startup
 if __name__ == "__main__":
