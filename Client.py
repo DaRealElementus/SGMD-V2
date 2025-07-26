@@ -8,11 +8,14 @@ import re
 
 SERVER = "http://127.0.0.1:5000"  # Change to your server's IP if needed
 
+
 def is_sha256(s: str) -> bool:
     return bool(re.fullmatch(r"[a-fA-F0-9]{64}", s))
 
+
 def sha256_hash(value: str) -> bytes:
     return hashlib.sha256(value.encode()).digest()
+
 
 def normalize_and_hash(username: str, password: str):
     if not is_sha256(username):
@@ -21,36 +24,44 @@ def normalize_and_hash(username: str, password: str):
         password = sha256_hash(password)
     return username.hex(), password.hex()
 
+
 def register(username, password):
     username, password = normalize_and_hash(username, password)
     resp = requests.post(f"{SERVER}/register", json={
         "username": username,
         "password": password
-        })
+    })
     return resp.json()
+
 
 def login(username, password):
     username, password = normalize_and_hash(username, password)
     resp = requests.post(f"{SERVER}/login", json={
         "username": username,
         "password": password
-        })
+    })
     return resp.json()
+
 
 def derive_key(username: str, password: str) -> bytes:
     combined = username + password
     return sha256_hash(combined)
+
 
 def decrypt_history(ciphertext: str, username: str, password: str) -> str:
     key = derive_key(username, password)
     data = base64.b64decode(ciphertext)
     iv = data[:16]
     ct = data[16:]
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    cipher = Cipher(
+        algorithms.AES(key),
+        modes.CBC(iv),
+        backend=default_backend())
     decryptor = cipher.decryptor()
     padded = decryptor.update(ct) + decryptor.finalize()
     unpadder = padding.PKCS7(128).unpadder()
     return (unpadder.update(padded) + unpadder.finalize()).decode()
+
 
 def auto_register_and_login(username, password):
     reg_result = register(username, password)
@@ -61,8 +72,13 @@ def auto_register_and_login(username, password):
         print("User already exists, logging in...")
         return login(username, password)
     else:
-        print("Registration failed:", reg_result.get("message", "Unknown error"))
+        print(
+            "Registration failed:",
+            reg_result.get(
+                "message",
+                "Unknown error"))
         return {"success": False}
+
 
 def main():
     print("=== CLT Chat Client ===")
@@ -94,6 +110,7 @@ def main():
         encrypted_response = resp.json()["response"]
         response = decrypt_history(encrypted_response, username, password)
         print(f"Bot: {response}")
+
 
 if __name__ == "__main__":
     main()
