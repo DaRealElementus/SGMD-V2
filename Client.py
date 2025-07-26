@@ -1,6 +1,6 @@
 import requests
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding, hashes
+from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 import base64
 import hashlib
@@ -23,12 +23,18 @@ def normalize_and_hash(username: str, password: str):
 
 def register(username, password):
     username, password = normalize_and_hash(username, password)
-    resp = requests.post(f"{SERVER}/register", json={"username": username, "password": password})
+    resp = requests.post(f"{SERVER}/register", json={
+        "username": username,
+        "password": password
+        })
     return resp.json()
 
 def login(username, password):
     username, password = normalize_and_hash(username, password)
-    resp = requests.post(f"{SERVER}/login", json={"username": username, "password": password})
+    resp = requests.post(f"{SERVER}/login", json={
+        "username": username,
+        "password": password
+        })
     return resp.json()
 
 def derive_key(username: str, password: str) -> bytes:
@@ -77,7 +83,7 @@ def main():
     print("Type 'exit' to quit.")
     while True:
         user_input = input("You: ")
-        if user_input.lower() == "exit":
+        if user_input.lower() == ("exit" or "quit"):
             break
         resp = requests.post(f"{SERVER}/chat", json={
             "user_id": user_id,
