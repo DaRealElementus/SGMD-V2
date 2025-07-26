@@ -75,6 +75,7 @@ docs/_build/
 .pybuilder/
 target/
 
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -136,6 +137,7 @@ celerybeat.pid
 
 # Environments
 .env
+.vs
 .envrc
 .venv
 env/
@@ -205,3 +207,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# databases
+.db
