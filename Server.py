@@ -9,13 +9,15 @@ import random
 import base64
 import sqlite3
 import logging
-import psutil
-import GPUtil
 
-from flask import Flask, request, jsonify, abort
+
+from flask import Flask, render_template, request, jsonify, abort
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.backends import default_backend
+import psutil
+import GPUtil
+import requests
 
 import llama_wrapper
 
@@ -229,6 +231,11 @@ def save_user_history(user_id, username, password, history):
     conn.close()
 
 
+@app.route('/')
+def home():
+    return render_template("Home.html")
+
+
 @app.route('/register', methods=['POST'])
 def register():
     """
@@ -429,7 +436,7 @@ def block_bots_and_invalid_requests():
     """
 
     # Only allow POST for API endpoints
-    if request.endpoint in ['register', 'login', 'chat']:
+    if request.endpoint in ['register', 'login', 'chat', '/']:
         if request.method != 'POST':
             log_warning(
                 f"Blocked non-POST request to {request.endpoint} from {request.remote_addr}")
@@ -460,6 +467,15 @@ def run_server():
     server_running = True
     app.run(host="0.0.0.0", port=5000, use_reloader=False)
     server_running = False
+
+
+@app.route('/shutdown', methods=['GET'])
+def close_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return 'Server shutting down...'
 
 
 def start_server():
@@ -499,11 +515,7 @@ def stop_server():
     server_running = False
     if server_thread and server_thread.is_alive():
         # Use a flag to signal the server thread to stop
-        server_thread.join(timeout=1)
-        if server_thread.is_alive():
-            print("Server did not stop gracefully, forcing exit.")
-            logging.warning("Server did not stop gracefully, forcing exit.")
-            os._exit(0)
+        requests.get("http://127.0.0.1:5000/shutdown")
 
 
 def monitor_server(update_time=int, bar_res=int):
@@ -520,7 +532,7 @@ def monitor_server(update_time=int, bar_res=int):
     average response time of llama_wrapper.
 
     update_time is the time in milliseconds between updates.
-    bar_res is the resolution of the progress bar for CPU and Memory usage. (Lower = Higher)
+    bar_res is the resolution of the progress bar for CPU and Memory usage. (Lower = Higher, 1-1000)
 
     does not return anything, but prints the values to the console.
     """
@@ -528,13 +540,15 @@ def monitor_server(update_time=int, bar_res=int):
     global server_running
     global server_thread
     global DEBUG_FLAGS
+    global TEMP_CREDENTIALS
 
-    CPU_USAGE = ""
-    MEMORY_USAGE = ""
     GPU_USAGE = ""
     VRAM_USAGE = ""
 
     while True:
+        if bar_res < 1:
+            bar_res = 1
+        bar_res * 10
         try:
             print("=== Server Monitor ===")
             print(
@@ -546,8 +560,8 @@ def monitor_server(update_time=int, bar_res=int):
             # calculate CPU usage
             CPU = psutil.cpu_percent()
             print(f"CPU Usage {CPU}%")
-            for i in range(0, 100, bar_res):
-                if CPU >= i:
+            for i in range(0, 1000, bar_res):
+                if CPU * 10 >= i:
                     print("█", end="")
                 else:
                     print("░", end="")
@@ -555,8 +569,8 @@ def monitor_server(update_time=int, bar_res=int):
             # calculate Memory usage
             MEMORY = psutil.virtual_memory().percent
             print(f"\nRAM Usage: {MEMORY}%")
-            for i in range(0, 100, bar_res):
-                if MEMORY >= i:
+            for i in range(0, 1000, bar_res):
+                if MEMORY * 10 >= i:
                     print("█", end="")
                 else:
                     print("░", end="")
@@ -565,19 +579,20 @@ def monitor_server(update_time=int, bar_res=int):
             GPU = GPUtil.getGPUs()
             if GPU:
                 gpu = GPU[0]
-                GPU_USAGE = gpu.load * 100
-                VRAM_USAGE = gpu.memoryUsed / gpu.memoryTotal
+                GPU_USAGE = round(gpu.load * 100, 2)
+                VRAM_USAGE = round((gpu.memoryUsed / gpu.memoryTotal) * 100, 2)
 
                 print(f"\nGPU Name: {gpu.name}")
-                print("GPU Usage:")
-                for i in range(0, 100, bar_res):
-                    if GPU_USAGE >= i:
+                print(f"GPU Usage: {GPU_USAGE}%")
+                for i in range(0, 1000, bar_res):
+                    if GPU_USAGE * 10 >= i:
                         print("█", end="")
                     else:
                         print("░", end="")
-                print("\nVRAM Usage:")
-                for i in range(0, 100, bar_res):
-                    if VRAM_USAGE >= i:
+                print(
+                    f"\nVRAM Usage: {VRAM_USAGE}% ({gpu.memoryUsed}MB out of {gpu.memoryTotal}MB)")
+                for i in range(0, 1000, bar_res):
+                    if VRAM_USAGE * 10 >= i:
                         print("█", end="")
                     else:
                         print("░", end="")
@@ -622,8 +637,18 @@ def cli_loop():
         elif cmd == "flags":
             for k, v in DEBUG_FLAGS.items():
                 print(f"  {k}: {v}")
-        elif cmd == "monitor":
-            monitor_server(update_time=1000, bar_res=1)
+        elif cmd.startswith("monitor "):
+            parts = cmd.split()
+            delay, res = 1000, 5
+            try:
+                delay = int(float(parts[1]))
+            except IndexError:
+                pass
+            try:
+                res = int(float(parts[2]))
+            except IndexError:
+                pass
+            monitor_server(delay, res)
         elif cmd.startswith("set "):
             parts = cmd.split()
             if len(parts) == 3 and parts[1] in DEBUG_FLAGS:
