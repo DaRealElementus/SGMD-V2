@@ -1,11 +1,14 @@
 import dearpygui.dearpygui as dpg
 import Client
 import ChatGUI
+import os
 dpg.create_context()
+script_dir = os.path.dirname(os.path.abspath(__file__))
+font_path = os.path.join(script_dir, "Arial.ttf")
 with dpg.font_registry():
-    default_font = dpg.add_font("Arial.ttf", 16) #16px
-    big_font = dpg.add_font("Arial.ttf", 24) #24px
-    title_font = dpg.add_font("Arial.ttf", 48) # 48px
+    default_font = dpg.add_font(font_path, 16) #16px
+    big_font = dpg.add_font(font_path, 24) #24px
+    title_font = dpg.add_font(font_path, 48) # 48px
 
 def loginUser(sender, app_data, user_data):
     username = dpg.get_value("Username_input")

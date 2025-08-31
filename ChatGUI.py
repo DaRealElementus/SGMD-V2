@@ -37,11 +37,9 @@ def openChat(user_id, username, password):
             on_enter=True,
             callback=send_message_callback,
             user_data=(user_id, username, password),
+            width=500
         )
-        dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password), width=500)
+        dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password))
 
     # Primary window must be an actual window tag, not viewport title
     dpg.set_primary_window("main_window", True)
-width, height = dpg.get_viewport_width(), dpg.get_viewport_height()
-dpg.set_item_width("main_window", width)
-dpg.set_item_height("main_window", height)
