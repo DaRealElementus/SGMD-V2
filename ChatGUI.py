@@ -7,8 +7,7 @@ def send_message_callback(sender, app_data, user_data):
     user_id, username, password = user_data
     if message:
         # Safely update chat display
-        old_text = dpg.get_value("chat_display")
-        dpg.set_value("chat_display", old_text + f"\nYou: {message}")
+        dpg.add_text(f"You: {message}", parent="chat_display", wrap=480)
         dpg.set_value("message_input", "")  # Clear input field
         resp = requests.post(f"{SERVER}/chat", json={
             "user_id": user_id,
@@ -18,8 +17,8 @@ def send_message_callback(sender, app_data, user_data):
         })
         encrypted_response = resp.json()["response"]
         response = Client.decrypt_history(encrypted_response, username, password)
-        old_text = dpg.get_value("chat_display")
-        dpg.set_value("chat_display", old_text + f"\nSigmund: {response}")
+        dpg.add_text(f"Sigmund: {response}", parent="chat_display", wrap=480)
+        dpg.set_y_scroll("chat_display", -1)
 
 
 def openChat(user_id, username, password):
@@ -30,23 +29,19 @@ def openChat(user_id, username, password):
     
     with dpg.window(label="Chat Window", tag="main_window", width=500, height=400):
         username, password = Client.normalize_and_hash(username, password)
-        dpg.add_input_text(
-            tag="chat_display",
-            multiline=True,
-            readonly=True,
-            width=1000,
-            height=400,
-            default_value="Welcome to Sigmund"
-        )
+        with dpg.child_window(tag="chat_display", width=500, height=400, autosize_x=False, autosize_y=False):
+            dpg.add_text("Welcome to Sigmund", wrap=480)
         dpg.add_input_text(
             label="Your Message",
             tag="message_input",
             on_enter=True,
             callback=send_message_callback,
             user_data=(user_id, username, password),
-            width=500
         )
-        dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password))
+        dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password), width=500)
 
     # Primary window must be an actual window tag, not viewport title
     dpg.set_primary_window("main_window", True)
+width, height = dpg.get_viewport_width(), dpg.get_viewport_height()
+dpg.set_item_width("main_window", width)
+dpg.set_item_height("main_window", height)
