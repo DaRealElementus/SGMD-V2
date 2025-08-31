@@ -436,8 +436,11 @@ def block_bots_and_invalid_requests():
     """
 
     # Only allow POST for API endpoints
-    if request.endpoint in ['register', 'login', 'chat', '/']:
-        if request.method != 'POST':
+    if request.endpoint in ['register', 'login', 'chat', '/', 'shutdown']:
+        if request.method == 'GET' and request.endpoint == 'shutdown':
+            # Allow GET for shutdown endpoint
+            return
+        elif request.method != 'POST':
             log_warning(
                 f"Blocked non-POST request to {request.endpoint} from {request.remote_addr}")
             abort(405)
@@ -448,7 +451,7 @@ def block_bots_and_invalid_requests():
             abort(400)
     # Optionally, block requests with suspicious user agents
     ua = request.headers.get('User-Agent', '')
-    if ua == '':
+    if ua in ["curl","wget","bot","scrapy","httpclient"]:
         log_warning(
             f"Blocked suspicious User-Agent from {request.remote_addr}")
         abort(403)
@@ -471,10 +474,11 @@ def run_server():
 
 @app.route('/shutdown', methods=['GET'])
 def close_server():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+    func = request.environ.get('werkzeug.server.shutdown')   
+    try:
+        func()
+    except Exception as e:
+        raise RuntimeError('Not running with the Werkzeug Server').with_traceback(None) from None
     return 'Server shutting down...'
 
 
@@ -601,9 +605,10 @@ def monitor_server(update_time=int, bar_res=int):
                 VRAM_USAGE = "N/A"
                 print(GPU_USAGE)
 
+            print("\n")
             time.sleep(update_time / 1000)  # Convert milliseconds to seconds
-
-            print("\033[2J\033[H", end="")
+            clear = os.system('cls') if os.name == 'nt' else os.system('clear')
+            clear
         except KeyboardInterrupt:
             print("\nExiting monitor.")
             break
@@ -637,7 +642,7 @@ def cli_loop():
         elif cmd == "flags":
             for k, v in DEBUG_FLAGS.items():
                 print(f"  {k}: {v}")
-        elif cmd.startswith("monitor "):
+        elif cmd.startswith("monitor"):
             parts = cmd.split()
             delay, res = 1000, 5
             try:
