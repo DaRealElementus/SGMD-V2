@@ -8,6 +8,7 @@ def send_message_callback(sender, app_data, user_data):
     if message:
         # Safely update chat display
         dpg.add_text(f"You: {message}", parent="chat_display", wrap=480)
+        dpg.set_y_scroll("chat_display", -1)
         dpg.set_value("message_input", "")  # Clear input field
         resp = requests.post(f"{SERVER}/chat", json={
             "user_id": user_id,
