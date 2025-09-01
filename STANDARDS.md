@@ -1,5 +1,5 @@
 # SIGMUND CODING STANDARDS
-# PEP 8 – Python Style Guide Summary
+# PEP 8 Python Style Guide Summary
 
 PEP 8 is the official style guide for Python code, promoting readability and consistency across Python projects.
 
