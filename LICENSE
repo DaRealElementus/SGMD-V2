@@ -1,20 +1,67 @@
-Business Source License 1.1
+# License
 
-Parameters
+## Business Source License 1.1
+
+### Parameters
 
 Licensor: Alex Larkings
 Licensed Work: SIGMUND SERVER SOFTWARE
-Additional Use Grant: You may use the Licensed Work for development, testing, or evaluation purposes only.
-Change Date: 01-01-2026
+Additional Use Grant: You may use the Licensed Work for development, testing, or evaluation purposes only. Production is prohibited
+Change Date: 2026-06-01 (YYYY-MM-DD)
 Change License: Apache 2.0
 
-Terms
+### Terms
 
-The Licensed Work is provided under the terms of the Business Source License version 1.1 (“BSL”), as published by MariaDB Corporation Ab.
+The Licensed Work is provided under the terms of the Business Source License version 1.1 (ï¿½BSLï¿½), as published by MariaDB Corporation Ab.
 
 Any use of the Licensed Work that is not expressly permitted under this license, including production use, is prohibited.
 
-Effective on the Change Date, the Licensed Work will be automatically re-licensed under the Change License.
+On the Change Date, all use restrictions in this license are removed, and the Licensed Work is made available under the Apache License, Version 2.0, as provided below.
 
 A copy of the BSL 1.1 license text can be found here: https://mariadb.com/bsl11/
 
+Provided Below is a copy of the Change license, which is to be adhered to after the date 2026-06-01 (YYYY-MM-DD) has passed
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+Licensed Work: SIGMUND SERVER SOFTWARE  
+Licensor: Alex Larkings
+
+1. **Open Source Grant**  
+   Subject to the terms and conditions of this License, you are hereby granted a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable license to use, reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute the Licensed Work and derivative works thereof, in source or object form.
+
+2. **Conditions and Limitations**  
+   - You must include a copy of this License in any distribution of the Licensed Work.
+   - You must not use the names "SIGMUND", "SIGMUND SERVER SOFTWARE", or the names of its contributors to endorse or promote products derived from this software without prior written permission.
+   - You must state significant changes made to the Licensed Work in any derivative works.
+
+3. **Disclaimer of Warranty**  
+   The Licensed Work is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+4. **Contribution**  
+   Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the Licensed Work by you to the Licensor shall be licensed as above, without any additional terms or conditions.
+
+5. **No Additional Restrictions**  
+   You may not impose any further restrictions on the exercise of the rights granted or affirmed under this License.
+
+For the full license text, see: http://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+Copyright (c) 2025-2026 Alex Larkings
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
