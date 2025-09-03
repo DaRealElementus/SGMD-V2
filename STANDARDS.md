@@ -1,11 +1,12 @@
 # SIGMUND CODING STANDARDS
-# PEP 8 Python Style Guide Summary
+
+## PEP 8 Python Style Guide Summary
 
 PEP 8 is the official style guide for Python code, promoting readability and consistency across Python projects.
 
 ---
 
-## Code Layout
+### Code Layout
 
 - **Indentation:** Use 4 spaces per indentation level. No tabs.
 - **Maximum Line Length:** Limit lines to 79 characters.
@@ -17,7 +18,7 @@ PEP 8 is the official style guide for Python code, promoting readability and con
 
 ---
 
-## Naming Conventions
+### Naming Conventions
 
 | Type                         | Style              |
 |-----------------------------|--------------------|
@@ -32,7 +33,7 @@ PEP 8 is the official style guide for Python code, promoting readability and con
 
 ---
 
-## Whitespace
+### Whitespace
 
 - No extra spaces inside parentheses, brackets, or braces.
 - Avoid trailing whitespace.
@@ -41,7 +42,7 @@ PEP 8 is the official style guide for Python code, promoting readability and con
 
 ---
 
-## Comments
+### Comments
 
 - **Block Comments:** Use complete sentences, update them when code changes.
 - **Inline Comments:** Use sparingly, separated by at least two spaces from code.
@@ -49,7 +50,7 @@ PEP 8 is the official style guide for Python code, promoting readability and con
 
 ---
 
-## Programming Recommendations
+### Programming Recommendations
 
 - Use `is`/`is not` for comparing to `None`.
 - Use `==`/`!=` for comparisons, not `is` for values.
@@ -58,10 +59,11 @@ PEP 8 is the official style guide for Python code, promoting readability and con
 
 ---
 
-## Miscellaneous
+### Miscellaneous
 
 - Code should work on multiple Python versions (if intended).
 - Follow the "Zen of Python" for guiding principles.
+
 ```zen
 Beautiful is better than ugly.
 Explicit is better than implicit.
@@ -86,24 +88,25 @@ Namespaces are one honking great idea -- let's do more of those!
 
 ---
 
-## Tools
+### Tools
 
 Use tools like:
+
 - `flake8`, `pylint` for linting.
 - `black` or `autopep8` for automatic formatting.
 
 ---
 
-## Final Note
+### Final Note
 
 Readability counts. When in doubt, favor clarity and consistency with surrounding code.
 
 For full details, see the original PEP: [https://peps.python.org/pep-0008/](https://peps.python.org/pep-0008/)
 
-
-# Git Commit and Pull Request Standards
+## Git Commit and Pull Request Standards
 
 For commit messages,follow a tree structure e.g.:
+
 ```commit
 File.py
 + change, short description of the change
@@ -118,21 +121,20 @@ File2.py
 ? comment, should refer to line number (? ln45)
 
 ```
+
 This allows for easy tracking of changes and understanding of the codebase evolution.
 For pull requests, follow these guidelines:
+
 - Ensure your code adheres to PEP 8 standards.
 - Include a clear description of the changes made.
 - Reference any related issues or discussions.
 
-**YOU MUST TEST YOUR CODE BEFORE PUSHING**
+### YOU MUST TEST YOUR CODE BEFORE PUSHING
 
-Keep vibe-coding to a minimum, AI is chill, but it isnt a slave and nor is it a god. <br>
+Keep vibe-coding to a minimum, AI is chill, but it isnt a slave and nor is it a god. \
 AND FOR THE LOVE OF GOD, PLEASE DO NOT USE AI RECURSIVELY TO TRY AND FIX BUGS, IT MAKES IT WORSE.
 
-Much love and care,
-Alex Larkings :heart:
+Much love and care ❤️,
 
-Alex Larkings<br>
+Alex Larkings\
 2025-26-07
-
-
