@@ -11,7 +11,7 @@ import sqlite3
 import logging
 
 
-from flask import Flask, render_template, request, jsonify, abort
+from flask import Flask, render_template, request, jsonify, abort, send_from_directory
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.backends import default_backend
@@ -232,8 +232,32 @@ def save_user_history(user_id, username, password, history):
 
 
 @app.route('/')
+@app.route('/Home')
 def home():
     return render_template("Home.html")
+
+@app.route('/How')
+def how():
+    return render_template("How.html")
+
+@app.route('/Download')
+def download_page():
+    return render_template("Download.html")
+
+
+@app.route('/static/Sigmund.zip', methods=['GET'])
+def download():
+    return send_from_directory(
+        directory=os.path.abspath('./static/'),
+        path='Sigmund.zip',
+        as_attachment=True,
+        mimetype='application/zip'
+    )
+
+
+@app.route('/About-us')
+def about():
+    return render_template("About.html")
 
 
 @app.route('/register', methods=['POST'])
