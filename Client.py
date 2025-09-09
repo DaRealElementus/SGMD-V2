@@ -6,7 +6,7 @@ import base64
 import hashlib
 import re
 
-SERVER = "http://121.45.50.210:5000/"  # Change to your server's IP if needed
+SERVER = "http://10.0.0.3:5000/"  # Change to your server's IP if needed
 
 
 def is_sha256(s: str) -> bool:
