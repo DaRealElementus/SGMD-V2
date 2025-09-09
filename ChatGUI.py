@@ -1,8 +1,15 @@
+<<<<<<< Updated upstream
 import dearpygui.dearpygui as dpg  # Import DearPyGui for GUI creation
 import Client                      # Import custom Client module for encryption/decryption
 import requests                    # Import requests for HTTP communication
 
 SERVER = "http://121.45.50.210:5000/"  # Server URL for chat backend
+=======
+import dearpygui.dearpygui as dpg
+import Client
+import requests
+SERVER = Client.SERVER
+>>>>>>> Stashed changes
 
 def send_message_callback(sender, app_data, user_data):
     message = dpg.get_value("message_input")  # Get the message from input field
