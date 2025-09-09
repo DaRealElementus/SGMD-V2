@@ -18,7 +18,7 @@ import time
 import datetime
 
 LLAMA_MODEL = "llama3.2"
-MAX_TOKENS = 2048  # Token threshold
+MAX_TOKENS = 4096  # Token threshold
 SUMMARY_INTERVAL = 5  # Summarize every 5 messages
 
 template = """
@@ -115,3 +115,11 @@ def remove_time_passed(context: str) -> str:
         if not line.strip().startswith("Time passed;"):
             cleaned_lines.append(line)
     return "\n".join(cleaned_lines)
+
+if __name__ == "__main__":
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() in ["exit", "quit"]:
+            break
+        response = run_llama_prompt(user_input, "")
+        print(f"Sigmund: {response}")
