@@ -56,6 +56,26 @@ def blink(channel=0):
         kit.servo[channel].angle = angle
         time.sleep(0.02)
 
+def eyebrows(emotion):
+    #move servos to based on emotional input
+
+    if emotion == "Happy":
+        kit.servo[1].angle = 90
+        kit.servo[2].angle = 90
+    if emotion == "Sad":
+        kit.servo[1].angle = 65
+        kit.servo[2].angle = 65
+    if emotion == "Shocked":
+        kit.servo[1].angle = 90
+        kit.servo[2].angle = 90
+    if emotion == "Understanding":
+        kit.servo[1].angle = 75
+        kit.servo[2].angle = 90
+    if emotion == "Concerned":
+        kit.servo[1].angle = 90
+        kit.servo[2].angle = 90
+   
+
 if __name__ == "__main__":
     try:
         while True:
