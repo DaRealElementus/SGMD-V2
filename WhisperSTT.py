@@ -1,4 +1,5 @@
 import sounddevice as sd
+import noisereduce as nr
 import numpy as np
 import webrtcvad
 import queue 
@@ -29,6 +30,7 @@ def start_streaming(callback):
 
     buffer = b''
     speaking = False
+    full_text = ""
 
     while True:
         data = audio_q.get()
@@ -38,7 +40,12 @@ def start_streaming(callback):
         elif speaking:
             audio_np = np.frombuffer(buffer, dtype=np.int16).astype(np.float32) / 32768.0
             sf.write("speech.wav", audio_np, samplerate)
-            segments, _ = model.transcribe("speech.wav")
+            data, sr = sf.read("speech.wav")
+            reduced_noise = nr.reduce_noise(y=data, sr=sr)
+            sf.write("speech2.wav", reduced_noise, sr)
+            os.remove("speech.wav")
+            segments, _ = model.transcribe("speech2.wav")
+            os.remove("speech2.wav")
             full_text = " ".join([seg.text.strip() for seg in segments])
             callback(full_text)
             buffer = b''
