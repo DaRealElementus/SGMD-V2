@@ -4,11 +4,11 @@ import time
 import re
 import hashlib
 import datetime
-import requests
 import random
 import base64
 import sqlite3
 import logging
+import sys
 
 
 from flask import Flask, render_template, request, jsonify, abort, send_from_directory
@@ -858,4 +858,7 @@ if __name__ == "__main__":
     print_public_ip()
     init_db()
     threading.Thread(target=inactivity_cleanup, daemon=True).start()
-    cli_loop()
+    if sys.stdin.isatty():
+        cli_loop()
+    else:
+        run_server()
