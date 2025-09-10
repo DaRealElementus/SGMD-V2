@@ -30,7 +30,7 @@ HASHED_RESET_PASSWORD = "320d454fb1d78a27458fe2eb736adc9f7140c4e2b38fb11aa217d1c
 
 DEBUG_FLAGS = {
     "log_requests": True,
-    "log_history": True,
+    "log_history": False,
     "allow_registration": True,
     "allow_login": True,
     "allow_chat": True,

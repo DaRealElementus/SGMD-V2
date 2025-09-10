@@ -3,5 +3,13 @@ cryptography==45.0.4
 requests==2.31.0
 langchain_ollama==0.1.0
 psutil==7.0.0
-GPUtils==1.4.0
+gputil==1.4.0
 dearpygui==2.1.0
+sounddevice==0.4.6
+noisereduce==3.0.3
+numpy==1.26.4
+webrtcvad==2.0.10
+soundfile==0.12.1
+faster-whisper==0.10.0
+simpleaudio
+piper-tts
