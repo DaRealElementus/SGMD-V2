@@ -3,6 +3,11 @@ import dearpygui.dearpygui as dpg
 import Client
 import requests
 SERVER = Client.SERVER
+import WhisperSTT
+import JustTalking
+def on_button_down(sender, app_data, user_data):
+    print("Button pressed (down)")
+    
 
 def send_message_callback(sender, app_data, user_data):
     message = dpg.get_value("message_input")  # Get the message from input field
@@ -52,7 +57,12 @@ def openChat(user_id, username, password):
         # Send button
         with dpg.group(horizontal=True):  # Button group
             dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password))
-            dpg.add_button(label="Voice")
+            dpg.add_button(label="Voice", tag="hold_btn")
+        dpg.set_primary_window("main_window", True)
+
+        with dpg.item_handler_registry(tag="hold_btn_handlers") as handler:
+            dpg.add_item_clicked_handler(callback=on_button_down, user_data=(user_id, username, password))
+
+dpg.bind_item_handler_registry("hold_btn", "hold_btn_handlers")
 
     # Set the main chat window as the primary window
-    dpg.set_primary_window("main_window", True)
