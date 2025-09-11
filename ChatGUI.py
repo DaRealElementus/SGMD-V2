@@ -5,8 +5,43 @@ import requests
 SERVER = Client.SERVER
 import WhisperSTT
 import JustTalking
+MODEL_SIZE = WhisperSTT.MODEL_SIZE
+COMPUTE_TYPE = WhisperSTT.COMPUTE_TYPE
+SAMPLERATE = WhisperSTT.SAMPLERATE
+CHANNELS = WhisperSTT.CHANNELS
+INPUT_DEVICE_INDEX = WhisperSTT.INPUT_DEVICE_INDEX  # Set to your mic device index, or None for default
+recorder = WhisperSTT.Recorder(SAMPLERATE, CHANNELS, INPUT_DEVICE_INDEX)
 def on_button_down(sender, app_data, user_data):
     print("Button pressed (down)")
+    recorder.start()
+
+
+def on_button_up(sender, app_data, user_data):
+    print("Button released (up)")
+    audio_np = recorder.stop()
+    print("Transcribing...")
+    message = WhisperSTT.transcribe_audio(audio_np)
+    user_id, username, password = user_data   # Unpack user credentials
+    if message:
+        # Display user's message in the chat window
+        dpg.add_text(f"You: {message}", parent="chat_display", wrap=480)
+        dpg.set_y_scroll("chat_display", -1)  # Scroll to bottom
+        dpg.set_value("message_input", "")     # Clear input field
+
+        # Send message to server
+        resp = requests.post(f"{SERVER}/chat", json={
+            "user_id": user_id,
+            "username": username,
+            "password": password,
+            "message": message
+        })
+        # Get encrypted response from server
+        encrypted_response = resp.json()["response"]
+        # Decrypt server response
+        response = Client.decrypt_history(encrypted_response, username, password)
+        # Display server's response in the chat window
+        dpg.add_text(f"Sigmund: {response}", parent="chat_display", wrap=480)
+        dpg.set_y_scroll("chat_display", -1)  # Scroll to bottom
     
 
 def send_message_callback(sender, app_data, user_data):
@@ -58,11 +93,12 @@ def openChat(user_id, username, password):
         with dpg.group(horizontal=True):  # Button group
             dpg.add_button(label="Send", callback=send_message_callback, user_data=(user_id, username, password))
             dpg.add_button(label="Voice", tag="hold_btn")
-        dpg.set_primary_window("main_window", True)
 
         with dpg.item_handler_registry(tag="hold_btn_handlers") as handler:
             dpg.add_item_clicked_handler(callback=on_button_down, user_data=(user_id, username, password))
+            dpg.add_item_deactivated_handler(callback=on_button_up, user_data=(user_id, username, password))
 
-dpg.bind_item_handler_registry("hold_btn", "hold_btn_handlers")
 
-    # Set the main chat window as the primary window
+        dpg.bind_item_handler_registry("hold_btn", "hold_btn_handlers")
+    dpg.set_primary_window("main_window", True)
+        # Set the main chat window as the primary window
