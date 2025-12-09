@@ -6,7 +6,7 @@ import base64
 import hashlib
 import re
 
-SERVER = "http://121.45.50.210:5000/"  # Change to your server's IP if needed
+SERVER = "http://127.0.0.1:5000/"  # Change to your server's IP if needed
 
 
 def is_sha256(s: str) -> bool:
@@ -82,6 +82,9 @@ def auto_register_and_login(username, password):
 
 def main():
     print("=== CLT Chat Client ===")
+    address = input("Server address: ")
+    global SERVER
+    SERVER = address if address.endswith("/") else address + "/"
     username = input("Username: ")
     password = input("Password: ")
 
